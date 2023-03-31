@@ -29,11 +29,11 @@ app.listen(port, (err) => {
 });
 
 app.get("/", (req, res) => {
+  connect();
   res.render("home");
 });
 
 app.get("/getList", async (req, res) => {
-  await connect();
   let list = await model.find();
   res.json(list);
 });
@@ -51,6 +51,9 @@ app.post("/edit/:id", async (req, res) => {
 });
 app.post("/add", async (req, res) => {
   const obj = req.body;
+  model.create(obj);
+  let list = await model.find();
+  res.json(list[list.length - 1]);
 });
 
 function connect() {

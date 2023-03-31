@@ -11,6 +11,22 @@
 
 <body onload="onStartLoad()">
     <div class="container-fluid">
+        <div class="row p-0" style="display: flex; flex-direction: row;">
+            <nav class="navbar bg-dark">
+                <form class="container-fluid" onsubmit="event.preventDefault()">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="inputSearch" placeholder="Name"
+                            aria-label="Username" aria-describedby="basic-addon1">
+                        <button class="btn btn-outline-light col-2" type="submit"
+                            style="border-top-right-radius: 5px; border-bottom-right-radius: 5px;">Search</button>
+                        <button type="button" class="btn btn-outline-success col-2 ms-2" style="border-radius: 5px;"
+                            onclick="CreateProduct()">
+                            New Product
+                        </button>
+                    </div>
+                </form>
+            </nav>
+        </div>
         {{{body}}}
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js"></script>
@@ -70,7 +86,7 @@
                 tr.remove();
                 let listTr = tbody.querySelectorAll('tr');
                 for (let i = STTdeleted; i < lastSTT; i++) {
-                    listTr[i].querySelector('[name = "stt"]').innerHTML = i;
+                    listTr[i].querySelector('[name = "stt"]').innerHTML = String(i);
                 }
                 lastSTT--;
             });
@@ -95,7 +111,7 @@
                 backdrop: 'static'
             });
         }
-        function CleanForm() {
+        function CleanModal() {
             let pro = document.querySelector('#form').querySelectorAll('input');
             for (let i = 0; i < pro.length; i++) {
                 pro[i].value = null;
@@ -105,17 +121,18 @@
             let pro = document.querySelector('#form').querySelectorAll('input');
             let obj = { "_name": pro[0].value, "_price": parseInt(pro[1].value), '_amount': parseInt(pro[2].value) };
             let url = '/add';
-            if (isEditClick) method = `/edit/${idClick}`;
+            if (isEditClick) url = `/edit/${idClick}`;
             modal.hide();
-            fetch(`${method}`, {
+            fetch(`${url}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(obj)
             }).then(res => res.json()).then(data => {
-                if (method === '/add') {
-                    tbody.innerHTML += getStringRow(data, ++lastSTT);
+                if (url === '/add') {
+                    lastSTT++;
+                    tbody.innerHTML += getStringRow(data, lastSTT);
                     return;
                 }
                 let tr = tbody.querySelectorAll('tr');
@@ -129,6 +146,11 @@
                     }
                 }
             })
+        }
+        function CreateProduct() {
+            CleanModal();
+            modal.show();
+            isEditClick = false;
         }
     </script>
 </body>
