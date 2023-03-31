@@ -34,22 +34,26 @@ app.get("/", (req, res) => {
 });
 
 app.get("/getList", async (req, res) => {
+  connect();
   let list = await model.find();
   res.json(list);
 });
 
 app.delete("/delete/:id", async (req, res) => {
+  connect();
   const id = req.params.id;
   await model.deleteOne({ _id: id });
   res.send("true");
 });
 app.post("/edit/:id", async (req, res) => {
+  connect();
   const id = req.params.id;
   const obj = req.body;
   await model.updateOne({ _id: id }, obj);
   res.json(obj);
 });
 app.post("/add", async (req, res) => {
+  connect();
   const obj = req.body;
   model.create(obj);
   let list = await model.find();
@@ -57,5 +61,6 @@ app.post("/add", async (req, res) => {
 });
 
 function connect() {
-  db.connect(uri).then(console.log("success !"));
+  let state = db.connection.readyState;
+  if (state != 1 && state != 2) db.connect(uri).then(console.log("success !"));
 }
