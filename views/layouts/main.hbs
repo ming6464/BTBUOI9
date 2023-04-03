@@ -29,19 +29,78 @@
         </div>
         {{{body}}}
     </div>
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Sản Phẩm</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form onsubmit="event.preventDefault()" id='form'>
+                        <div class="mb-3" name='property'>
+                            <label for="InputName" class="form-label">Tên</label>
+                            <input type="text" required class="form-control" id="InputName" placeholder="Name Product"
+                                aria-describedby="emailHelp">
+                        </div>
+                        <div class="mb-3" name='property'>
+                            <label for="InputPrice" class="form-label">Giá</label>
+                            <input type="number" required class="form-control" placeholder="Price" min="0"
+                                id="InputPrice">
+                        </div>
+                        <div class="mb-3" name='property'>
+                            <label for="InputAmount" class="form-label">Số lượng</label>
+                            <input type="number" required class="form-control" placeholder="Amount" id="InputAmount">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveModal" onclick="saveForm()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalDelete" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="modalContent" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="modalContent"></h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="OnDelete()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let tbody = document.querySelector('#tbody');
         let idClick = '';
         let isEditClick = false;
+        let isDeleteClick = false;
         let lastSTT = 0;
         let STTdeleted = 0;
+        let modal = new bootstrap.Modal(document.getElementById('staticBackdrop'), {
+            keyboard: false,
+            backdrop: 'static'
+        });
+        let modalDelete = new bootstrap.Modal(document.getElementById('modalDelete'), {
+            keyboard: false,
+            backdrop: 'static'
+        });
+        let trDelete;
         function onStartLoad() {
             fetch('/getList').then(res => res.json()).then(data => {
                 showList(data);
                 addEventClickButtons();
             }).then(err => console.log(err));
         }
+
         function showList(list) {
             lastSTT = 0;
             list.forEach(obj => {
@@ -50,14 +109,16 @@
             })
 
         }
-        function getStringRow(obj, stt) {
+
+        function getStringRow(obj1, stt1) {
+            console.log(obj1);
             row = `
                 <tr>
-                    <td scope="col" name = "id" colspan="1" style = "display: none;">${obj._id}</td>
-                    <td scope="col" name = "stt" colspan="1">${stt}</td>
-                    <td scope="col" colspan="2">${obj._name}</td>
-                    <td scope="col" colspan="1">${obj._price}</td>
-                    <td scope="col" colspan="1">${obj._amount}</td>
+                    <td scope="col" name = "id" colspan="1" style = "display: none;">${obj1._id}</td>
+                    <td scope="col" name = "stt" colspan="1">${stt1}</td>
+                    <td scope="col" name = "nameRow" colspan="2">${obj1._name}</td>
+                    <td scope="col" colspan="1">${obj1._price}</td>
+                    <td scope="col" colspan="1">${obj1._amount}</td>
                     <td colspan="1">
                         <div class="btn-group" role="group" aria-label="Basic mixed styles example">
                         <button type="button" name = "edit" class="btn btn-outline-dark">Edit</button>
@@ -65,13 +126,16 @@
                     </div>
                 </td>
             </tr>`;
+            console.log(row);
             return row;
         }
+
         function editRow(event) {
+            isEditClick = true;
             let td = event.target.closest('tr').querySelectorAll('td');
             let inputs = document.querySelector('#form').querySelectorAll('input');
-            console.log(td);
             idClick = td[0].textContent;
+            console.log(td + "\n" + idClick);
             inputs[0].value = td[2].textContent;
             inputs[1].value = td[3].textContent;
             inputs[2].value = td[4].textContent;
@@ -79,17 +143,26 @@
         }
 
         function deleteRow(event) {
-            const tr = event.target.closest('tr');
-            idClick = tr.querySelector('[name = "id"]').textContent;
-            STTdeleted = Number(tr.querySelector('[name = "stt"]').textContent);
+            trDelete = event.target.closest('tr');
+            idClick = trDelete.querySelector('[name = "id"]').textContent;
+            let name = trDelete.querySelector('[name = "nameRow"]').textContent;
+            document.querySelector('#modalContent').innerHTML = "Xác nhận xoá [" + name + "]";
+            modalDelete.show();
+            STTdeleted = Number(trDelete.querySelector('[name = "stt"]').textContent);
+            isDeleteClick = true;
+        }
+
+        function OnDelete() {
+            modalDelete.hide();
+            if (!isDeleteClick) return;
             fetch(`delete/${idClick}`, { method: 'delete' }).then(res => res.text()).then(data => {
-                tr.remove();
                 let listTr = tbody.querySelectorAll('tr');
-                for (let i = STTdeleted; i < lastSTT; i++) {
-                    listTr[i].querySelector('[name = "stt"]').innerHTML = String(i);
+                listTr[STTdeleted].remove();
+                for (let i = STTdeleted + 1; i < listTr.length; i++) {
+                    listTr[i].querySelector('[name = "stt"]').innerHTML = String(i - 1);
                 }
-                lastSTT--;
             });
+            isDeleteClick = false;
         }
 
         function addEventClickButtons() {
@@ -102,23 +175,33 @@
             })
             editButtons.forEach(btn => {
                 btn.addEventListener('click', (event) => {
-                    isEditClick = true;
                     editRow(event);
                 });
             })
-            modal = new bootstrap.Modal(document.getElementById('staticBackdrop'), {
-                keyboard: false,
-                backdrop: 'static'
-            });
+
         }
         function CleanModal() {
             let pro = document.querySelector('#form').querySelectorAll('input');
             for (let i = 0; i < pro.length; i++) {
-                pro[i].value = null;
+                pro[i].value = "";
             }
         }
         function saveForm() {
+            isDeleteClick = false;
             let pro = document.querySelector('#form').querySelectorAll('input');
+            let _name = pro[0].value;
+            let _price = parseInt(pro[1].value);
+            let _amount = parseInt(pro[2].value);
+            if (_name.length == 0 || !_price || !_amount) {
+                document.querySelector('#modalContent').innerHTML = "Dữ liệu trống ?";
+                modalDelete.show();
+                return;
+            }
+            if (!/^[a-zA-Z ]+$/.test(_name)) {
+                document.querySelector('#modalContent').innerHTML = "Tên sản phẩm sai định dạng !";
+                modalDelete.show();
+                return;
+            }
             let obj = { "_name": pro[0].value, "_price": parseInt(pro[1].value), '_amount': parseInt(pro[2].value) };
             let url = '/add';
             if (isEditClick) url = `/edit/${idClick}`;
@@ -131,8 +214,23 @@
                 body: JSON.stringify(obj)
             }).then(res => res.json()).then(data => {
                 if (url === '/add') {
-                    lastSTT++;
-                    tbody.innerHTML += getStringRow(data, lastSTT);
+                    lastSTT = tbody.querySelectorAll('tr').length;
+                    row = `
+                <tr>
+                    <td scope="col" name = "id" colspan="1" style = "display: none;">${data._id}</td>
+                    <td scope="col" name = "stt" colspan="1">${lastSTT}</td>
+                    <td scope="col" colspan="2">${obj._name}</td>
+                    <td scope="col" colspan="1">${obj._price}</td>
+                    <td scope="col" colspan="1">${obj._amount}</td>
+                    <td colspan="1">
+                        <div class="btn-group" role="group" aria-label="Basic mixed styles example">
+                        <button type="button" name = "edit" class="btn btn-outline-dark">Edit</button>
+                        <button type="button" name = "delete" class="btn btn-outline-danger">Delete</button>
+                    </div>
+                </td>
+            </tr>`;
+                    tbody.innerHTML += row;
+                    addEventClickButtons();
                     return;
                 }
                 let tr = tbody.querySelectorAll('tr');

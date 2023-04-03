@@ -13,35 +13,3 @@
         </tbody>
     </table>
 </div>
-<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-    aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="staticBackdropLabel">Sản Phẩm</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form onsubmit="event.preventDefault()" id='form'>
-                    <div class="mb-3" name='property'>
-                        <label for="InputName" class="form-label">Tên</label>
-                        <input type="text" required class="form-control" id="InputName" placeholder="Name Product"
-                            aria-describedby="emailHelp">
-                    </div>
-                    <div class="mb-3" name='property'>
-                        <label for="InputPrice" class="form-label">Giá</label>
-                        <input type="number" required class="form-control" placeholder="Price" min="0" id="InputPrice">
-                    </div>
-                    <div class="mb-3" name='property'>
-                        <label for="InputAmount" class="form-label">Số lượng</label>
-                        <input type="text" required class="form-control" placeholder="Amount" id="InputAmount">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="saveModal" onclick="saveForm()">Save</button>
-            </div>
-        </div>
-    </div>
-</div>
